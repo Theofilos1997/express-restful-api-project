@@ -2,18 +2,18 @@
 
 ## Description
 
-This repository contains the necessary code to build a simple CRUD App, using a Node.js API, to store information about team members.
+This repository contains the necessary code to build a simple CRUD App, using a Node.js API to store information about team members.
 
 ## Requirements
 Preferable to run the following commands via GitBash.
+<br>
+Install [Node](https://nodejs.org/en)
+You can also install it using [software on demand](https://digitalondemand.pfizer.com/Software).
 <br>
 Install npm and necessary dependances:
 ```
 npm install
 ```
-
-Install [Node](https://nodejs.org/en)
-You can also install it using [software on demand](https://digitalondemand.pfizer.com/Software).
 
 ## Run server
 ```
