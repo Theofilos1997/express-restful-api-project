@@ -16,10 +16,8 @@ const saveMembers = (newData) => {
 
 // Endpoint to get a list of all team members (get request)
 createMyCustomApi.get('/getAllMembers', function(req, res) {
-    fs.readFile(__dirname + "/" + "members.json", 'utf8', function(err, data) {
-        res.status(200);
-        res.end(data);
-    });
+    const members = loadMembers();
+    res.status(200).json(members);
 })
 
 // Endpoint to add a new member to the team (post request)
@@ -45,7 +43,10 @@ createMyCustomApi.post('/addNewMember', (req, res) => {
 createMyCustomApi.put('/updateExistMember/:memberId', (req, res) => {
     const putId = parseInt(req.params.memberId, 10);
     let members = loadMembers();
-    if(members.some(member => member.memberId === putId)) {
+    if(!members.some(member => member.memberId === putId)) {
+        res.status(404).json({ message: 'The record with the required ID does not exist...' });
+    }
+    else {
         const filteredData = members.filter((i) => i.memberId === putId);
         filteredData.forEach((i) => {
             i.memberId = req.body.memberId,
@@ -55,9 +56,6 @@ createMyCustomApi.put('/updateExistMember/:memberId', (req, res) => {
         });
         saveMembers(members);
         res.status(201).json({ message: 'OK' });
-    }
-    else {
-        res.status(404).json({ message: 'The record with the required ID does not exist...' });
     }
 });
 
