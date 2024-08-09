@@ -45,33 +45,31 @@ createMyCustomApi.put('/updateExistMember/:memberId', (req, res) => {
     let members = loadMembers();
     if(!members.some(member => member.memberId === putId)) {
         res.status(404).json({ message: 'The record with the required ID does not exist...' });
+        return;
     }
-    else {
-        const filteredData = members.filter((i) => i.memberId === putId);
-        filteredData.forEach((i) => {
-            i.memberId = req.body.memberId,
-            i.role = req.body.role,
-            i.firstname = req.body.firstname,
-            i.lastname = req.body.lastname
+    const filteredData = members.filter((i) => i.memberId === putId);
+    filteredData.forEach((i) => {
+        i.memberId = req.body.memberId,
+        i.role = req.body.role,
+        i.firstname = req.body.firstname,
+        i.lastname = req.body.lastname
         });
-        saveMembers(members);
-        res.status(201).json({ message: 'OK' });
-    }
+    saveMembers(members);
+    res.status(201).json({ message: 'OK' });
 });
 
 // Endpoint to remove a member from the team (delete request)
 createMyCustomApi.delete('/removeMember/:memberId', (req, res) => {
     const delId = parseInt(req.params.memberId, 10);
     const members = loadMembers();
-    if(members.some(member => member.memberId === delId)) {
-        const index = members.findIndex(member => member.memberId === delId);
-        members.splice(index, 1);
-        saveMembers(members);
-        res.status(204).json({ message: 'OK' });
-    }
-    else {
+    if(!members.some(member => member.memberId === delId)) {
         res.status(404).json({ message: 'The record with the required ID does not exist...' });
+        return
     }
+    const index = members.findIndex(member => member.memberId === delId);
+    members.splice(index, 1);
+    saveMembers(members);
+    res.status(204).json({ message: 'OK' });
 });
 
 module.exports = createMyCustomApi;
