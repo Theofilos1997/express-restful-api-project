@@ -1,18 +1,6 @@
 const express = require('express');
 const createMyCustomApi = express.Router();
-const fs = require('fs');
-
-// Fetch data from the members.json file
-const loadMembers = () => {
-    const jsonData = fs.readFileSync(__dirname + "/" + "members.json");
-        return JSON.parse(jsonData);
-}
-
-// Update members.js file
-const saveMembers = (newData) => {
-    const stringifyData = JSON.stringify(newData);
-    fs.writeFileSync(__dirname + "/" + "members.json", stringifyData)
-}
+const {loadMembers, saveMembers} = require('./dataAccess')
 
 // Endpoint to get a list of all team members (get request)
 createMyCustomApi.get('/getAllMembers', function(req, res) {
@@ -28,32 +16,45 @@ createMyCustomApi.post('/addNewMember', (req, res) => {
         firstname: req.body.firstname,
         lastname: req.body.lastname
     }
+    if (!newMember.memberId || !newMember.role || !newMember.firstname || !newMember.lastname) {
+        res.status(400).json({ message: 'All fields are required...' });
+        return
+    }
     const members = loadMembers();
     if(members.some(member => member.memberId === newMember.memberId)) {
         res.status(409).json({ message: 'This record ID already exists...' });
+        return
     }
-    else {
-        members.push(newMember);
-        saveMembers(members);
-        res.status(200).json({ message: 'OK' });
-    }
+    members.push(newMember);
+    saveMembers(members);
+    res.status(200).json({ message: 'OK' });
 });
 
 // Endpoint to update the information about an existing team member (put request)
 createMyCustomApi.put('/updateExistMember/:memberId', (req, res) => {
-    const putId = parseInt(req.params.memberId, 10);
+    const memberToUpdateId = parseInt(req.params.memberId, 10);
     let members = loadMembers();
-    if(!members.some(member => member.memberId === putId)) {
+    if(!members.some(member => member.memberId === memberToUpdateId)) {
         res.status(404).json({ message: 'The record with the required ID does not exist...' });
         return;
     }
-    const filteredData = members.filter((i) => i.memberId === putId);
+    const updatedMember = {
+        memberId: req.body.memberId,
+        role: req.body.role,
+        firstname: req.body.firstname,
+        lastname: req.body.lastname
+    }
+    if (!updatedMember.memberId || !updatedMember.role || !updatedMember.firstname || !updatedMember.lastname) {
+        res.status(400).json({ message: 'All fields are required...' });
+        return
+    }
+    const filteredData = members.filter((i) => i.memberId === memberToUpdateId);
     filteredData.forEach((i) => {
-        i.memberId = req.body.memberId,
-        i.role = req.body.role,
-        i.firstname = req.body.firstname,
-        i.lastname = req.body.lastname
-        });
+        i.memberId = updatedMember.memberId,
+        i.role = updatedMember.role,
+        i.firstname = updatedMember.firstname,
+        i.lastname = updatedMember.lastname
+    });
     saveMembers(members);
     res.status(201).json({ message: 'OK' });
 });
