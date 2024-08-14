@@ -1,29 +1,30 @@
 const express = require('express');
-const createMyCustomApi = express.Router();
-const {loadMembers, saveMembers} = require('./dataAccess')
+const membersApi = express.Router();
+const {loadMembers, saveMembers} = require('./dataAccess');
+const base10 = 10;
 
 // Endpoint to get a list of all team members (get request)
-createMyCustomApi.get('/getAllMembers', function(req, res) {
+membersApi.get('/getAllMembers', function(req, res) {
     const members = loadMembers();
     res.status(200).json(members);
-})
+});
 
 // Endpoint to add a new member to the team (post request)
-createMyCustomApi.post('/addNewMember', (req, res) => {
+membersApi.post('/addNewMember', (req, res) => {
     const newMember = {
         memberId: req.body.memberId,
         role: req.body.role,
         firstname: req.body.firstname,
         lastname: req.body.lastname
-    }
+    };
     if (!newMember.memberId || !newMember.role || !newMember.firstname || !newMember.lastname) {
         res.status(400).json({ message: 'All fields are required...' });
-        return
+        return;
     }
     const members = loadMembers();
     if(members.some(member => member.memberId === newMember.memberId)) {
         res.status(409).json({ message: 'This record ID already exists...' });
-        return
+        return;
     }
     members.push(newMember);
     saveMembers(members);
@@ -31,10 +32,10 @@ createMyCustomApi.post('/addNewMember', (req, res) => {
 });
 
 // Endpoint to update the information about an existing team member (put request)
-createMyCustomApi.put('/updateExistMember/:memberId', (req, res) => {
-    const memberToUpdateId = parseInt(req.params.memberId, 10);
+membersApi.put('/updateExistMember/:memberId', (req, res) => {
+    const memberToUpdateId = parseInt(req.params.memberId, base10);
     let members = loadMembers();
-    if(!members.some(member => member.memberId === memberToUpdateId)) {
+    if(!members.some(m => m.memberId === memberToUpdateId)) {
         res.status(404).json({ message: 'The record with the required ID does not exist...' });
         return;
     }
@@ -43,34 +44,30 @@ createMyCustomApi.put('/updateExistMember/:memberId', (req, res) => {
         role: req.body.role,
         firstname: req.body.firstname,
         lastname: req.body.lastname
-    }
+    };
     if (!updatedMember.memberId || !updatedMember.role || !updatedMember.firstname || !updatedMember.lastname) {
         res.status(400).json({ message: 'All fields are required...' });
-        return
+        return;
     }
-    const filteredData = members.filter((i) => i.memberId === memberToUpdateId);
-    filteredData.forEach((i) => {
-        i.memberId = updatedMember.memberId,
-        i.role = updatedMember.role,
-        i.firstname = updatedMember.firstname,
-        i.lastname = updatedMember.lastname
-    });
+    members.find(m => m.memberId === memberToUpdateId);
+    const memberIndex = members.findIndex(m => m.memberId === memberToUpdateId);
+    members[memberIndex] = updatedMember;
     saveMembers(members);
     res.status(201).json({ message: 'OK' });
 });
 
 // Endpoint to remove a member from the team (delete request)
-createMyCustomApi.delete('/removeMember/:memberId', (req, res) => {
-    const delId = parseInt(req.params.memberId, 10);
+membersApi.delete('/removeMember/:memberId', (req, res) => {
+    const delId = parseInt(req.params.memberId, base10);
     const members = loadMembers();
-    if(!members.some(member => member.memberId === delId)) {
+    if(!members.some(m => m.memberId === delId)) {
         res.status(404).json({ message: 'The record with the required ID does not exist...' });
-        return
+        return;
     }
-    const index = members.findIndex(member => member.memberId === delId);
+    const index = members.findIndex(m => m.memberId === delId);
     members.splice(index, 1);
     saveMembers(members);
     res.status(204).json({ message: 'OK' });
 });
 
-module.exports = createMyCustomApi;
+module.exports = membersApi;
