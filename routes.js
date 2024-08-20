@@ -49,7 +49,6 @@ membersApi.put('/updateExistMember/:memberId', (req, res) => {
         res.status(400).json({ message: 'All fields are required...' });
         return;
     }
-    members.find(m => m.memberId === memberToUpdateId);
     const memberIndex = members.findIndex(m => m.memberId === memberToUpdateId);
     members[memberIndex] = updatedMember;
     saveMembers(members);
